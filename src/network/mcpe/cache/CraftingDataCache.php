@@ -38,6 +38,7 @@ use pocketmine\network\mcpe\protocol\types\recipe\FurnaceRecipeBlockName;
 use pocketmine\network\mcpe\protocol\types\recipe\IntIdMetaItemDescriptor;
 use pocketmine\network\mcpe\protocol\types\recipe\PotionContainerChangeRecipe as ProtocolPotionContainerChangeRecipe;
 use pocketmine\network\mcpe\protocol\types\recipe\PotionTypeRecipe as ProtocolPotionTypeRecipe;
+use pocketmine\network\mcpe\protocol\types\recipe\RecipeUnlockingRequirement;
 use pocketmine\network\mcpe\protocol\types\recipe\ShapedRecipe as ProtocolShapedRecipe;
 use pocketmine\network\mcpe\protocol\types\recipe\ShapelessRecipe as ProtocolShapelessRecipe;
 use pocketmine\timings\Timings;
@@ -82,6 +83,7 @@ final class CraftingDataCache{
 		$itemTagDowngrader = ItemTagDowngrader::getInstance($this->protocolId);
 		$recipesWithTypeIds = [];
 
+		$noUnlockingRequirement = new RecipeUnlockingRequirement(null);
 		foreach($manager->getCraftingRecipeIndex() as $index => $recipe){
 			try{
 				if($recipe instanceof ShapelessRecipe){
@@ -101,6 +103,7 @@ final class CraftingDataCache{
 							$nullUUID,
 							$typeTag,
 							50,
+							$noUnlockingRequirement,
 							$index
 						);
 					}
@@ -123,6 +126,7 @@ final class CraftingDataCache{
 							CraftingRecipeBlockName::CRAFTING_TABLE,
 							50,
 							true,
+							$noUnlockingRequirement,
 							$index
 						);
 					}
