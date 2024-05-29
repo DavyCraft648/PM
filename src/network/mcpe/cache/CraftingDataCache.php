@@ -83,7 +83,7 @@ final class CraftingDataCache{
 		$itemTagDowngrader = ItemTagDowngrader::getInstance($this->protocolId);
 		$recipesWithTypeIds = [];
 
-		$noUnlockingRequirement = new RecipeUnlockingRequirement(null);
+		$noUnlockingRequirement = new RecipeUnlockingRequirement(RecipeUnlockingRequirement::UNLOCKING_CONTEXT_NONE, []);
 		foreach($manager->getCraftingRecipeIndex() as $index => $recipe){
 			try{
 				if($recipe instanceof ShapelessRecipe){
