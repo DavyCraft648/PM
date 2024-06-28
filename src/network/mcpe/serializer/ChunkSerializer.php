@@ -97,7 +97,7 @@ final class ChunkSerializer{
 		[$minSubChunkIndex, $maxSubChunkIndex] = self::getDimensionChunkBounds($dimensionId);
 		for($y = $minSubChunkIndex; $writtenCount < $subChunkCount, $y < $maxSubChunkIndex; ++$y, ++$writtenCount){
 			$subChunkStream = clone $stream;
-			self::serializeSubChunk($chunk->getSubChunk($y), $blockTranslator, $subChunkStream, false);
+			self::serializeSubChunk($chunk->getSubChunk($y), $blockTranslator, $subChunkStream, true);
 			$subChunks[] = $subChunkStream->getBuffer();
 		}
 

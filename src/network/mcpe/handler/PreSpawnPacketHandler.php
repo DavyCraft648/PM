@@ -107,7 +107,7 @@ class PreSpawnPacketHandler extends ChunkRequestPacketHandler{
 				"NetherGames v5.0",
 				Uuid::fromString(Uuid::NIL),
 				false,
-				false,
+				true,
 				new NetworkPermissions(disableClientSounds: true),
 				[],
 				0,

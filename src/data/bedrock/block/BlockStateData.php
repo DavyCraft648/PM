@@ -23,9 +23,11 @@ declare(strict_types=1);
 
 namespace pocketmine\data\bedrock\block;
 
+use pocketmine\nbt\LittleEndianNbtSerializer;
 use pocketmine\nbt\NbtException;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\Tag;
+use pocketmine\nbt\TreeRoot;
 use pocketmine\utils\Utils;
 use pocketmine\VersionInfo;
 use function array_keys;
@@ -48,6 +50,8 @@ final class BlockStateData{
 	public const TAG_NAME = "name";
 	public const TAG_STATES = "states";
 	public const TAG_VERSION = "version";
+
+	private int $idHash;
 
 	/**
 	 * @param Tag[] $states
@@ -132,6 +136,19 @@ final class BlockStateData{
 	public function toNbt() : CompoundTag{
 		return $this->toVanillaNbt()
 			->setLong(VersionInfo::TAG_WORLD_DATA_VERSION, VersionInfo::WORLD_DATA_VERSION);
+	}
+
+	public function getIdHash() : int{
+		if(isset($this->idHash)){
+			return $this->idHash;
+		}
+		$nbt = $this->toVanillaNbt();
+		$nbt->removeTag(self::TAG_VERSION);
+		return $this->idHash = self::createHash($nbt);
+	}
+
+	public static function createHash(CompoundTag $states) : int {
+		return hexdec(hash("fnv1a32", (new LittleEndianNbtSerializer())->write(new TreeRoot($states))));
 	}
 
 	public function equals(self $that) : bool{

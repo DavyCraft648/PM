@@ -62,11 +62,12 @@ final class BlockStateDictionary{
 	 * @phpstan-param list<BlockStateDictionaryEntry> $states
 	 */
 	public function __construct(
-		private array $states
+		private array $states,
+		private array $rIdHashes
 	){
 		$table = [];
-		foreach($this->states as $stateId => $stateNbt){
-			$table[$stateNbt->getStateName()][$stateNbt->getRawStateProperties()] = $stateId;
+		foreach($this->rIdHashes as $idHash => $stateId){
+			$table[$this->states[$stateId]->getStateName()][$this->states[$stateId]->getRawStateProperties()] = $idHash;
 		}
 
 		//setup fast path for stateless blocks
@@ -88,8 +89,8 @@ final class BlockStateDictionary{
 			$table = [];
 			//TODO: if we ever allow mutating the dictionary, this would need to be rebuilt on modification
 
-			foreach($this->states as $i => $state){
-				$table[$state->getStateName()][$state->getMeta()] = $i;
+			foreach($this->rIdHashes as $idHash => $stateId){
+				$table[$this->states[$stateId]->getStateName()][$this->states[$stateId]->getMeta()] = $idHash;
 			}
 
 			$this->idMetaToStateIdLookupCache = [];
@@ -107,11 +108,11 @@ final class BlockStateDictionary{
 	}
 
 	public function generateDataFromStateId(int $networkRuntimeId) : ?BlockStateData{
-		return ($this->states[$networkRuntimeId] ?? null)?->generateStateData();
+		return ($this->states[$this->rIdHashes[$networkRuntimeId]] ?? null)?->generateStateData();
 	}
 
 	public function generateCurrentDataFromStateId(int $networkRuntimeId) : ?BlockStateData{
-		return ($this->states[$networkRuntimeId] ?? null)?->generateCurrentStateData();
+		return ($this->states[$this->rIdHashes[$networkRuntimeId]] ?? null)?->generateCurrentStateData();
 	}
 
 	/**
@@ -134,7 +135,7 @@ final class BlockStateDictionary{
 	 * This is used for serializing crafting recipe inputs.
 	 */
 	public function getMetaFromStateId(int $networkRuntimeId) : ?int{
-		return ($this->states[$networkRuntimeId] ?? null)?->getMeta();
+		return ($this->states[$this->rIdHashes[$networkRuntimeId]] ?? null)?->getMeta();
 	}
 
 	/**
@@ -181,6 +182,8 @@ final class BlockStateDictionary{
 
 		$uniqueNames = [];
 
+		$rIdHashes = [];
+
 		//this hack allows the internal cache index to use interned strings which are already available in the
 		//core code anyway, saving around 40 KB of memory
 		foreach((new \ReflectionClass(BlockTypeNames::class))->getConstants() as $value){
@@ -200,8 +203,9 @@ final class BlockStateDictionary{
 			$newState = $upgrader->upgrade($state);
 			$uniqueName = $uniqueNames[$newState->getName()] ??= $newState->getName();
 			$entries[$i] = new BlockStateDictionaryEntry($uniqueName, $newState->getStates(), $meta, $newState->equals($state) ? null : $state);
+			$rIdHashes[$newState->getIdHash()] = $i;
 		}
 
-		return new self($entries);
+		return new self($entries, $rIdHashes);
 	}
 }
